@@ -1,0 +1,31 @@
+{
+  "name": "brobbot-redis-brain",
+  "version": "1.0.0",
+  "description": "Redis-backed brain for brobbot",
+  "main": "index.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/b3nj4m/brobbot-redis-brain"
+  },
+  "keywords": [
+    "brobbot",
+    "redis"
+  ],
+  "author": "Ben Robbins <ben.robbins@gmail.com> (https://b3nj4m.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/b3nj4m/brobbot-redis-brain/issues"
+  },
+  "peerDependencies": {
+    "brobbot": "3.x"
+  },
+  "dependencies": {
+    "redis": "~0.12.1",
+    "msgpack": "~0.2.4",
+    "q": "~1.1.2",
+    "coffee-script": "~1.8.0"
+  }
+}
