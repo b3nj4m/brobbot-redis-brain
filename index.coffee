@@ -1,8 +1,7 @@
-{Brain} = require 'brobbot'
+{Brain, User} = require 'brobbot'
 Url = require "url"
 Redis = require "redis"
 Q = require "q"
-User = require '../user'
 _ = require "lodash"
 msgpack = require "msgpack"
 

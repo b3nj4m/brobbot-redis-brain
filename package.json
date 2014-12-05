@@ -26,6 +26,7 @@
     "redis": "~0.12.1",
     "msgpack": "~0.2.4",
     "q": "~1.1.2",
-    "coffee-script": "~1.8.0"
+    "coffee-script": "~1.8.0",
+    "lodash": "~2.4.1"
   }
 }
