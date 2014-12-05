@@ -31,7 +31,7 @@ class RedisBrain extends Brain
 
     @info   = Url.parse  redisUrl, true
     @client = Redis.createClient(@info.port, @info.hostname, return_buffers: true)
-    @prefix = @info.path?.replace('/', '') or 'hubot'
+    @prefix = @info.path?.replace('/', '') or 'brobbot'
 
     connectedDefer = Q.defer()
     @connected = connectedDefer.promise
