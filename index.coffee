@@ -68,8 +68,9 @@ class RedisBrain extends Brain
     key.replace @prefixRegex, ''
 
   keys: ->
-    Q.ninvoke(@client, "keys", "#{@prefix}:*").then (keys) =>
-      _.map keys, (key) => @unkey key
+    @ready.then =>
+      Q.ninvoke(@client, "keys", "#{@prefix}:*").then (keys) =>
+        _.map keys, (key) => @unkey key
 
   key: (key) ->
     "#{@prefix}:#{key}"
@@ -82,47 +83,65 @@ class RedisBrain extends Brain
     @ready.then =>
       Q.ninvoke(@client, "set", @key(key), @serialize(value))
 
+  remove: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'del', @key(key))
+
   # Public: increment the value by num atomically
   #
   # Returns promise
   incrby: (key, num) ->
-    Q.ninvoke(@client, 'incrby', @key(key), num)
+    @ready.then =>
+      Q.ninvoke(@client, 'incrby', @key(key), num)
 
   # Public: Get all the keys for the given hash table name
   #
-  # Returns array.
+  # Returns promise for array.
   hkeys: (table) ->
-    Q.ninvoke(@client, 'hkeys', @key(table))
+    @ready.then =>
+      Q.ninvoke(@client, 'hkeys', @key(table))
 
   # Public: Get all the values for the given hash table name
   #
-  # Returns array.
+  # Returns promise for array.
   hvals: (table) ->
-    Q.ninvoke(@client, 'hvals', @key(table))
+    @ready.then =>
+      Q.ninvoke(@client, 'hvals', @key(table))
 
   # Public: Set a value in the specified hash table
   #
-  # Returns the value.
+  # Returns promise for the value.
   hset: (table, key, value) ->
-    Q.ninvoke(@client, 'hset', @key(table), key, value)
+    @ready.then =>
+      Q.ninvoke(@client, 'hset', @key(table), key, value)
 
   # Public: Get a value from the specified hash table.
   #
-  # Returns: the value.
+  # Returns: promise for the value.
   hget: (table, key) ->
-    Q.ninvoke(@client, 'hget', @key(table), key)
+    @ready.then =>
+      Q.ninvoke(@client, 'hget', @key(table), key)
+
+  # Public: Delete a field from the specified hash table.
+  #
+  # Returns promise
+  hdel: (table, key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'hdel', @key(table), key)
 
   # Public: Get the whole hash table as an object.
   #
   # Returns: object.
   hgetall: (table) ->
-    Q.ninvoke(@client, 'hgetall', @key(table))
+    @ready.then =>
+      Q.ninvoke(@client, 'hgetall', @key(table))
 
   # Public: increment the hash value by num atomically
   #
   # Returns promise
   hincrby: (table, key, num) ->
-    Q.ninvoke(@client, 'hincrby', @key(table), key, num)
+    @ready.then =>
+      Q.ninvoke(@client, 'hincrby', @key(table), key, num)
 
   close: ->
     @client.quit()
