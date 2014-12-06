@@ -32,6 +32,7 @@ class RedisBrain extends Brain
     @info   = Url.parse  redisUrl, true
     @client = Redis.createClient(@info.port, @info.hostname, return_buffers: true)
     @prefix = @info.path?.replace('/', '') or 'brobbot'
+    @prefixRegex = new RegExp "^#{@prefix}"
 
     connectedDefer = Q.defer()
     @connected = connectedDefer.promise
@@ -54,6 +55,21 @@ class RedisBrain extends Brain
       @authed = Q()
 
     @ready = Q.all [@connected, @authed]
+
+  # Take a dump
+  #
+  # Returns promise for object
+  dump: ->
+    @keys().then (keys) =>
+      promises = _.map keys, (key) => @get key
+      Q.all(promises).then (values) -> _.object keys, values
+
+  unkey: (key) ->
+    key.replace @prefixRegex, ''
+
+  keys: ->
+    Q.ninvoke(@client, "keys", "#{@prefix}:*").then (keys) =>
+      _.map keys, (key) => @unkey key
 
   key: (key) ->
     "#{@prefix}:#{key}"
