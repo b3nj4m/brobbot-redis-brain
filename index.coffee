@@ -152,6 +152,10 @@ class RedisBrain extends Brain
   key: (key) ->
     "#{@prefix}:#{key}"
 
+  exists: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'exists', @key(key))
+
   get: (key) ->
     @ready.then =>
       Q.ninvoke(@client, "get", @key(key)).then(@deserialize.bind(@))
