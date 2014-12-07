@@ -60,7 +60,44 @@ class RedisBrain extends Brain
   #
   # Returns promise for object
   dump: ->
-    @getall()
+    #TODO return contents of dump.rdb?
+
+  llen: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'llen', @key key)
+
+  lset: (key, index, value) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'lset', @key(key), index, @serialize value)
+
+  linsert: (key, placement, pivot, value) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'linsert', @key(key), placement, pivot, @serialize value)
+
+  lpush: (key, value) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'lpush', @key(key), @serialize value)
+
+  rpush: (key, value) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'rpush', @key(key), @serialize value)
+
+  lpop: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'lpop', @key(key)).then @deserialize.bind(@)
+
+  rpop: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'rpop', @key(key)).then @deserialize.bind(@)
+
+  lindex: (key, index) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'lindex', @key(key), index).then @deserialize.bind(@)
+
+  lrange: (key, start, end) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'lrange', @key(key), start, end).then (values) =>
+        _.map values, @deserialize.bind(@)
 
   keys: (searchKey = '') ->
     if searchKey
@@ -79,21 +116,6 @@ class RedisBrain extends Brain
   types: (keys) ->
     @ready.then =>
       Q.all(_.map(keys, (key) => @type key))
-
-  getall: (searchKey = '') ->
-    @ready.then =>
-      @keys(searchKey).then (keys) =>
-        @types(keys).then (types) =>
-          promises = _.map keys, (key, idx) =>
-            if types[idx] is 'hash'
-              fn = 'hgetall'
-            else
-              fn = 'get'
-
-            @[fn] key
-
-          Q.all(promises).then (values) ->
-            _.object(keys, values)
 
   unkey: (key) ->
     key.replace @prefixRegex, ''
@@ -132,21 +154,22 @@ class RedisBrain extends Brain
   # Returns promise for array.
   hvals: (table) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hvals', @key(table))
+      Q.ninvoke(@client, 'hvals', @key(table)).then (list) =>
+        _.map list, @deserialize.bind(@)
 
   # Public: Set a value in the specified hash table
   #
   # Returns promise for the value.
   hset: (table, key, value) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hset', @key(table), key, value)
+      Q.ninvoke(@client, 'hset', @key(table), key, @serialize value)
 
   # Public: Get a value from the specified hash table.
   #
   # Returns: promise for the value.
   hget: (table, key) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hget', @key(table), key)
+      Q.ninvoke(@client, 'hget', @key(table), key).then @deserialize.bind(@)
 
   # Public: Delete a field from the specified hash table.
   #
@@ -160,7 +183,8 @@ class RedisBrain extends Brain
   # Returns: object.
   hgetall: (table) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hgetall', @key(table))
+      Q.ninvoke(@client, 'hgetall', @key(table)).then (obj) =>
+        _.mapValues obj, @deserialize.bind(@)
 
   # Public: increment the hash value by num atomically
   #
