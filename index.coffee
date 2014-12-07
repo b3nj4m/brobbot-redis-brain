@@ -234,7 +234,9 @@ class RedisBrain extends Brain
   # Returns serialized value
   serialize: (value) ->
     if @useMsgpack
-      return msgpack.pack(value)
+      if _.isObject value
+        return msgpack.pack(value)
+      return value.toString()
 
     JSON.stringify(value)
 
@@ -243,9 +245,12 @@ class RedisBrain extends Brain
   # Returns deserialized value
   deserialize: (value) ->
     if @useMsgpack
-      return msgpack.unpack(value)
+      result = msgpack.unpack(value)
+      if result is undefined or not _.isObject result
+        result = value.toString()
+      return result
 
-    JSON.parse(value)
+    JSON.parse(value.toString())
 
   # Public: Perform any necessary pre-set serialization on a user
   #
