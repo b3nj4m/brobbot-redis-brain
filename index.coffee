@@ -154,7 +154,8 @@ class RedisBrain extends Brain
 
   exists: (key) ->
     @ready.then =>
-      Q.ninvoke(@client, 'exists', @key(key))
+      Q.ninvoke(@client, 'exists', @key(key)).then (exists) ->
+        exists.toString() is '1'
 
   get: (key) ->
     @ready.then =>
