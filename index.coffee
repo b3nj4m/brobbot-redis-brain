@@ -60,17 +60,43 @@ class RedisBrain extends Brain
   #
   # Returns promise for object
   dump: ->
-    @keys().then (keys) =>
-      promises = _.map keys, (key) => @get key
-      Q.all(promises).then (values) -> _.object keys, values
+    @getall()
+
+  keys: (searchKey = '') ->
+    if searchKey
+      prefix = @key searchKey
+    else
+      prefix = @prefix
+
+    @ready.then =>
+      Q.ninvoke(@client, "keys", "#{prefix}:*").then (keys) =>
+        _.map keys, (key) => @unkey key
+
+  type: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'type', @key key)
+
+  types: (keys) ->
+    @ready.then =>
+      Q.all(_.map(keys, (key) => @type key))
+
+  getall: (searchKey = '') ->
+    @ready.then =>
+      @keys(searchKey).then (keys) =>
+        @types(keys).then (types) =>
+          promises = _.map keys, (key, idx) =>
+            if types[idx] is 'hash'
+              fn = 'hgetall'
+            else
+              fn = 'get'
+
+            @[fn] key
+
+          Q.all(promises).then (values) ->
+            _.object(keys, values)
 
   unkey: (key) ->
     key.replace @prefixRegex, ''
-
-  keys: ->
-    @ready.then =>
-      Q.ninvoke(@client, "keys", "#{@prefix}:*").then (keys) =>
-        _.map keys, (key) => @unkey key
 
   key: (key) ->
     "#{@prefix}:#{key}"
