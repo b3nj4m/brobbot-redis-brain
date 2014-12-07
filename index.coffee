@@ -101,15 +101,15 @@ class RedisBrain extends Brain
 
   sadd: (key, value) ->
     @ready.then =>
-      Q.ninvoke @client, 'sadd', @key(key), value
+      Q.ninvoke @client, 'sadd', @key(key), @serialize(value)
 
   sismember: (key, value) ->
     @ready.then =>
-      Q.ninvoke @client, 'sismember', @key(key), value
+      Q.ninvoke @client, 'sismember', @key(key), @serialize(value)
 
   srem: (key, value) ->
     @ready.then =>
-      Q.ninvoke @client, 'srem', @key(key), value
+      Q.ninvoke @client, 'srem', @key(key), @serialize(value)
 
   scard: (key) ->
     @ready.then =>
