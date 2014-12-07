@@ -99,6 +99,35 @@ class RedisBrain extends Brain
       Q.ninvoke(@client, 'lrange', @key(key), start, end).then (values) =>
         _.map values, @deserialize.bind(@)
 
+  sadd: (key, value) ->
+    @ready.then =>
+      Q.ninvoke @client, 'sadd', @key(key), value
+
+  sismember: (key, value) ->
+    @ready.then =>
+      Q.ninvoke @client, 'sismember', @key(key), value
+
+  srem: (key, value) ->
+    @ready.then =>
+      Q.ninvoke @client, 'srem', @key(key), value
+
+  scard: (key) ->
+    @ready.then =>
+      Q.ninvoke @client, 'scard', @key(key)
+
+  spop: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'spop', @key(key)).then @deserialize.bind(@)
+
+  srandmember: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'srandmember', @key(key)).then @deserialize.bind(@)
+
+  smembers: (key) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'smembers', @key(key)).then (values) =>
+        _.map values, @deserialize.bind(@)
+
   keys: (searchKey = '') ->
     if searchKey
       prefix = @key searchKey
