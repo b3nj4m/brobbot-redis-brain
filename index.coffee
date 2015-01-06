@@ -312,7 +312,7 @@ class RedisBrain extends Brain
   userForName: (name) ->
     name = name.toLowerCase()
 
-    @users.then (users) ->
+    @users().then (users) ->
       _.find users, (user) ->
         user.name and user.name.toString().toLowerCase() is name
 
@@ -324,7 +324,7 @@ class RedisBrain extends Brain
   usersForRawFuzzyName: (fuzzyName) ->
     fuzzyName = fuzzyName.toLowerCase()
 
-    @users.then (users) ->
+    @users().then (users) ->
       _.find users, (user) ->
         user.name and user.name.toString().toLowerCase().indexOf(fuzzyName) is 0
 
