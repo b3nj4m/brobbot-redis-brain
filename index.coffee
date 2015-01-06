@@ -32,7 +32,7 @@ class RedisBrain extends Brain
     @info   = Url.parse  redisUrl, true
     @client = Redis.createClient(@info.port, @info.hostname, return_buffers: true)
     @prefix = @info.path?.replace('/', '') or 'brobbot'
-    @prefixRegex = new RegExp "^#{@prefix}"
+    @prefixRegex = new RegExp "^#{@prefix}:"
 
     connectedDefer = Q.defer()
     @connected = connectedDefer.promise
@@ -136,14 +136,11 @@ class RedisBrain extends Brain
         _.map values, @deserialize.bind(@)
 
   keys: (searchKey = '') ->
-    if searchKey
-      prefix = @key searchKey
-    else
-      prefix = @prefix
+    searchKey = @key searchKey
 
     @ready.then =>
-      Q.ninvoke(@client, "keys", "#{prefix}:*").then (keys) =>
-        _.map keys, (key) => @unkey key
+      Q.ninvoke(@client, "keys", "#{searchKey}*").then (keys) =>
+        _.map keys, (key) => @unkey(key.toString())
 
   type: (key) ->
     @ready.then =>
@@ -158,6 +155,9 @@ class RedisBrain extends Brain
 
   key: (key) ->
     "#{@prefix}:#{key}"
+
+  usersKey: () ->
+    "#{@prefix}:users"
 
   exists: (key) ->
     @ready.then =>
@@ -197,6 +197,13 @@ class RedisBrain extends Brain
     @ready.then =>
       Q.ninvoke(@client, 'hvals', @key(table)).then (list) =>
         _.map list, @deserialize.bind(@)
+
+  # Public: get the size of the hash table
+  #
+  # Returns promise for int.
+  hlen: (table) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'hlen', @key(table))
 
   # Public: Set a value in the specified hash table
   #
@@ -282,7 +289,7 @@ class RedisBrain extends Brain
   # Returns promise for an Array of User objects.
   users: ->
     @ready.then =>
-      Q.ninvoke(@client, 'hgetall', @key('users')).then (users) =>
+      Q.ninvoke(@client, 'hgetall', @usersKey()).then (users) =>
         _.mapValues users, @deserializeUser.bind(@)
 
   # Public: Add a user to the data-store
@@ -290,14 +297,14 @@ class RedisBrain extends Brain
   # Returns promise for user
   addUser: (user) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hset', @key('users'), user.id, @serializeUser(user)).then -> user
+      Q.ninvoke(@client, 'hset', @usersKey(), user.id, @serializeUser(user)).then -> user
 
   # Public: Get or create a User object given a unique identifier.
   #
   # Returns promise for a User instance of the specified user.
   userForId: (id, options) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hget', @key('users'), id).then (user) =>
+      Q.ninvoke(@client, 'hget', @usersKey(), id).then (user) =>
         if user
           user = @deserializeUser user
 
@@ -325,7 +332,7 @@ class RedisBrain extends Brain
     fuzzyName = fuzzyName.toLowerCase()
 
     @users().then (users) ->
-      _.find users, (user) ->
+      _.filter users, (user) ->
         user.name and user.name.toString().toLowerCase().indexOf(fuzzyName) is 0
 
   # Public: If fuzzyName is an exact match for a user, returns an array with
@@ -340,6 +347,6 @@ class RedisBrain extends Brain
       exactMatch = _.find matchedUsers, (user) ->
         user.name.toLowerCase() is fuzzyName
 
-      exactMatch or matchedUsers
+      exactMatch and [exactMatch] or matchedUsers
 
 module.exports = RedisBrain
