@@ -94,10 +94,17 @@ class RedisBrain extends Brain
     @ready.then =>
       Q.ninvoke(@client, 'lindex', @key(key), index).then @deserialize.bind(@)
 
+  lgetall: (key) ->
+    @lrange(key, 0, -1)
+
   lrange: (key, start, end) ->
     @ready.then =>
       Q.ninvoke(@client, 'lrange', @key(key), start, end).then (values) =>
         _.map values, @deserialize.bind(@)
+
+  lrem: (key, value) ->
+    @ready.then =>
+      Q.ninvoke(@client, 'lrem', @key(key), 0, @serialize(value))
 
   sadd: (key, value) ->
     @ready.then =>
