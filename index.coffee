@@ -1,4 +1,4 @@
-{Brain, User} = require '../..'
+{Brain, User} = require 'brobbot'
 Url = require "url"
 Redis = require "redis"
 Q = require "q"
