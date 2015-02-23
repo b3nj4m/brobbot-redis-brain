@@ -20,7 +20,7 @@
     "url": "https://github.com/b3nj4m/brobbot-redis-brain/issues"
   },
   "peerDependencies": {
-    "brobbot": "3.x-4.x"
+    "brobbot": "3.x - 4.x"
   },
   "dependencies": {
     "redis": "~0.12.1",
