@@ -333,7 +333,7 @@ class RedisBrain extends Brain
 
     @users().then (users) ->
       _.filter users, (user) ->
-        user.name and user.name.toString().toLowerCase().indexOf(fuzzyName) is 0
+        user and user.name and user.name.toString().toLowerCase().indexOf(fuzzyName) is 0
 
   # Public: If fuzzyName is an exact match for a user, returns an array with
   # just that user. Otherwise, returns an array of all users for which
