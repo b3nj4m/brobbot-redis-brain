@@ -120,7 +120,8 @@ class RedisBrain extends Brain
 
   scard: (key) ->
     @ready.then =>
-      Q.ninvoke @client, 'scard', @key(key)
+      Q.ninvoke(@client, 'scard', @key(key)).then (size) ->
+        parseInt(size.toString())
 
   spop: (key) ->
     @ready.then =>
