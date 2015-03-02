@@ -39,9 +39,9 @@ class RedisBrain extends Brain
 
     @client.on "connect", connectedDefer.resolve.bind(connectedDefer)
 
-    @connected.then ->
+    @connected.then =>
       @robot.logger.info "Successfully connected to Redis"
-    @connected.fail (err) ->
+    @connected.fail (err) =>
       @robot.logger.error "Failed to connect to Redis: " + err
 
     if @info.auth
