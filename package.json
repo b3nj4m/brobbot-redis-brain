@@ -1,6 +1,6 @@
 {
   "name": "brobbot-redis-brain",
-  "version": "1.5.8",
+  "version": "1.5.9",
   "description": "Redis-backed brain for brobbot",
   "main": "index.coffee",
   "scripts": {
