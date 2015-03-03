@@ -104,7 +104,7 @@ class RedisBrain extends Brain
 
   lrem: (key, value) ->
     @ready.then =>
-      Q.ninvoke(@client, 'lrem', @key(key), 0, @serialize(value))
+      Q.ninvoke(@client, 'lrem', @key(key), 0, @serialize(value)).then (count) -> parseInt(count.toString())
 
   sadd: (key, value) ->
     @ready.then =>
