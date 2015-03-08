@@ -58,11 +58,9 @@ class RedisBrain extends Brain
 
     @ready = Q.all [@connected, @authed]
 
-  # Take a dump
-  #
-  # Returns promise for object
-  dump: ->
-    #TODO return contents of dump.rdb?
+  reset: ->
+    @keys().then (keys) =>
+      Q.all(_.map(keys, (key) => @remove(key)))
 
   llen: (key) ->
     @ready.then =>
