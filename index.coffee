@@ -32,7 +32,9 @@ class RedisBrain extends Brain
     @info   = Url.parse  redisUrl, true
     @client = Redis.createClient(@info.port, @info.hostname, return_buffers: true)
     @prefix = @info.path?.replace('/', '') or 'brobbot'
+    @dataPrefix = process.env.BROBBOT_REDIS_DATA_PREFIX or 'data'
     @prefixRegex = new RegExp "^#{@prefix}:"
+    @dataPrefixRegex = new RegExp "^#{@dataPrefix}:"
 
     connectedDefer = Q.defer()
     @connected = connectedDefer.promise
@@ -64,7 +66,7 @@ class RedisBrain extends Brain
 
   llen: (key) ->
     @ready.then =>
-      Q.ninvoke(@client, 'llen', @key key)
+      Q.ninvoke(@client, 'llen', @key key).then((val) -> parseInt(val.toString()))
 
   lset: (key, index, value) ->
     @ready.then =>
@@ -72,7 +74,7 @@ class RedisBrain extends Brain
 
   linsert: (key, placement, pivot, value) ->
     @ready.then =>
-      Q.ninvoke(@client, 'linsert', @key(key), placement, pivot, @serialize value)
+      Q.ninvoke(@client, 'linsert', @key(key), placement, @serialize(pivot), @serialize(value)).then((val) -> parseInt(val.toString()))
 
   lpush: (key, value) ->
     @ready.then =>
@@ -108,11 +110,11 @@ class RedisBrain extends Brain
 
   sadd: (key, value) ->
     @ready.then =>
-      Q.ninvoke @client, 'sadd', @key(key), @serialize(value)
+      Q.ninvoke(@client, 'sadd', @key(key), @serialize(value)).then((val) -> Q())
 
   sismember: (key, value) ->
     @ready.then =>
-      Q.ninvoke @client, 'sismember', @key(key), @serialize(value)
+      Q.ninvoke(@client, 'sismember', @key(key), @serialize(value)).then((val) -> parseInt(val.toString()) is 1)
 
   srem: (key, value) ->
     @ready.then =>
@@ -120,8 +122,7 @@ class RedisBrain extends Brain
 
   scard: (key) ->
     @ready.then =>
-      Q.ninvoke(@client, 'scard', @key(key)).then (size) ->
-        parseInt(size.toString())
+      Q.ninvoke(@client, 'scard', @key(key)).then((size) -> parseInt(size.toString()))
 
   spop: (key) ->
     @ready.then =>
@@ -152,10 +153,10 @@ class RedisBrain extends Brain
       Q.all(_.map(keys, (key) => @type key))
 
   unkey: (key) ->
-    key.replace @prefixRegex, ''
+    key.replace(@prefixRegex, '').replace(@dataPrefixRegex, '')
 
   key: (key) ->
-    "#{@prefix}:#{key}"
+    "#{@prefix}:#{@dataPrefix}:#{key}"
 
   usersKey: () ->
     "#{@prefix}:users"
@@ -182,14 +183,15 @@ class RedisBrain extends Brain
   # Returns promise
   incrby: (key, num) ->
     @ready.then =>
-      Q.ninvoke(@client, 'incrby', @key(key), num)
+      Q.ninvoke(@client, 'incrby', @key(key), num).then((val) -> parseInt(val.toString()))
 
   # Public: Get all the keys for the given hash table name
   #
   # Returns promise for array.
   hkeys: (table) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hkeys', @key(table))
+      Q.ninvoke(@client, 'hkeys', @key(table)).then (results) ->
+        _.map(results, (result) -> result.toString())
 
   # Public: Get all the values for the given hash table name
   #
@@ -204,7 +206,7 @@ class RedisBrain extends Brain
   # Returns promise for int.
   hlen: (table) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hlen', @key(table))
+      Q.ninvoke(@client, 'hlen', @key(table)).then((val) -> parseInt(val.toString()))
 
   # Public: Set a value in the specified hash table
   #
@@ -240,7 +242,7 @@ class RedisBrain extends Brain
   # Returns promise
   hincrby: (table, key, num) ->
     @ready.then =>
-      Q.ninvoke(@client, 'hincrby', @key(table), key, num)
+      Q.ninvoke(@client, 'hincrby', @key(table), key, num).then((val) -> parseInt(val.toString()))
 
   close: ->
     @client.quit()
@@ -260,6 +262,9 @@ class RedisBrain extends Brain
   #
   # Returns deserialized value
   deserialize: (value) ->
+    if value is undefined or value is null
+      return null
+
     if @useMsgpack
       result = msgpack.unpack(value)
       if result is undefined or not _.isObject result
