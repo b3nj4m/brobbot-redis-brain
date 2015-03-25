@@ -236,9 +236,12 @@ class RedisBrain extends Brain
   # Returns: object.
   hgetall: (table) ->
     @ready.then =>
-      #TODO patch redis client to return Map?
+      #TODO patch redis client to return Map, so that keys like __proto__ are ok
       Q.ninvoke(@client, 'hgetall', @key(table)).then (obj) =>
-        _.mapValues obj, @deserialize.bind(@)
+        map = new Map()
+        _.each obj, (val, key) =>
+          map.set(key, @deserialize(val))
+        map
 
   # Public: increment the hash value by num atomically
   #
