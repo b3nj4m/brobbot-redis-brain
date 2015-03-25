@@ -144,7 +144,11 @@ class RedisBrain extends Brain
 
   type: (key) ->
     @ready.then =>
-      Q.ninvoke(@client, 'type', @key key)
+      Q.ninvoke(@client, 'type', @key key).then (result) ->
+        result = result.toString()
+        if result is 'string'
+          return 'object'
+        result
 
   types: (keys) ->
     @ready.then =>
