@@ -236,6 +236,7 @@ class RedisBrain extends Brain
   # Returns: object.
   hgetall: (table) ->
     @ready.then =>
+      #TODO patch redis client to return Map?
       Q.ninvoke(@client, 'hgetall', @key(table)).then (obj) =>
         _.mapValues obj, @deserialize.bind(@)
 
