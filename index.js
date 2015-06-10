@@ -515,8 +515,8 @@ RedisBrain.prototype.userForName = function(name) {
 
   return this.users().then(function(users) {
     return _.find(users, function(user) {
-      return user.name && user.name.toString().toLowerCase() === name;
-    });
+      return user && user.name.toLowerCase() === name;
+    }) || null;
   });
 };
 
@@ -525,7 +525,7 @@ RedisBrain.prototype.usersForRawFuzzyName = function(fuzzyName) {
 
   return this.users().then(function(users) {
     return _.filter(users, function(user) {
-      return user && user.name && user.name.toString().toLowerCase().indexOf(fuzzyName) === 0;
+      return user && user.name.toLowerCase().substr(0, fuzzyName.length) === fuzzyName;
     });
   });
 };
@@ -535,7 +535,7 @@ RedisBrain.prototype.usersForFuzzyName = function(fuzzyName) {
 
   return this.usersForRawFuzzyName(fuzzyName).then(function(matchedUsers) {
     var exactMatch = _.find(matchedUsers, function(user) {
-      return user.name.toLowerCase() === fuzzyName;
+      return user && user.name.toLowerCase() === fuzzyName;
     });
 
     return exactMatch && [exactMatch] || matchedUsers;
