@@ -8,7 +8,7 @@ var _ = require("lodash");
 var msgpack = require("msgpack");
 
 function RedisBrain(robot, useMsgpack) {
-  Brain.call(this, this.robot);
+  Brain.call(this, robot);
 
   var self = this;
   var redisUrl = null;
