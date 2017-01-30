@@ -23,9 +23,9 @@
     "brobbot": "6.x"
   },
   "dependencies": {
-    "redis": "~0.12.1",
-    "msgpack": "~0.2.4",
+    "lodash": "~2.4.1",
+    "msgpack": "^1.0.2",
     "q": "~1.1.2",
-    "lodash": "~2.4.1"
+    "redis": "~0.12.1"
   }
 }
