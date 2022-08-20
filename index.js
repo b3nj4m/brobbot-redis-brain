@@ -39,7 +39,7 @@ function RedisBrain(robot, useMsgpack) {
 
   this.info = Url.parse(redisUrl, true);
 
-  this.client = Redis.createClient(this.info.port, this.info.hostname, {
+  this.client = Redis.createClient(redisUrl, {
     return_buffers: true
   });
 
